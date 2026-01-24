@@ -1,0 +1,240 @@
+{
+  "entities": {
+    "Purchase": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Purchase",
+      "type": "object",
+      "description": "Represents a purchase transaction of gas cylinders.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the purchase transaction."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the purchase transaction.",
+          "format": "date-time"
+        },
+        "cylinderType": {
+          "type": "string",
+          "description": "Type of gas cylinder purchased (e.g., 14.2kg, 19kg, 10kg, 5kg)."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of cylinders purchased."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "Price per cylinder."
+        },
+        "totalCost": {
+          "type": "number",
+          "description": "Total cost of the purchase."
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "cylinderType",
+        "quantity",
+        "unitPrice",
+        "totalCost"
+      ]
+    },
+    "Sale": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Sale",
+      "type": "object",
+      "description": "Represents a sale transaction of gas cylinders.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the sale transaction."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the sale transaction.",
+          "format": "date-time"
+        },
+        "cylinderType": {
+          "type": "string",
+          "description": "Type of gas cylinder sold (e.g., 14.2kg, 19kg, 10kg, 5kg)."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of cylinders sold."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "Price per cylinder."
+        },
+        "totalRevenue": {
+          "type": "number",
+          "description": "Total revenue from the sale."
+        },
+        "saleType": {
+          "type": "string",
+          "description": "Type of sale (Counter Sale, Delivery Boy Sale)."
+        },
+        "deliveryBoyId": {
+          "type": "string",
+          "description": "Reference to DeliveryBoy. (Relationship: DeliveryBoy 1:N Sale). Nullable if saleType is Counter Sale."
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "cylinderType",
+        "quantity",
+        "unitPrice",
+        "totalRevenue",
+        "saleType"
+      ]
+    },
+    "Expense": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Expense",
+      "type": "object",
+      "description": "Represents an operational expense.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the expense."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the expense.",
+          "format": "date-time"
+        },
+        "expenseType": {
+          "type": "string",
+          "description": "Type of expense (e.g., Daily Wages, Diesel, Electricity Bill, Chit, Custom)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the expense."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the expense."
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "expenseType",
+        "amount"
+      ]
+    },
+    "DeliveryBoy": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DeliveryBoy",
+      "type": "object",
+      "description": "Represents a delivery boy.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the delivery boy."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the delivery boy."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "users/{userId}",
+        "definition": {
+          "entityName": "user",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile data. Only the authenticated user can access their own profile.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "purchases/{purchaseId}",
+        "definition": {
+          "entityName": "Purchase",
+          "schema": {
+            "$ref": "#/backend/entities/Purchase"
+          },
+          "description": "Stores purchase transactions.  Accessible to authorized agency personnel.",
+          "params": [
+            {
+              "name": "purchaseId",
+              "description": "The unique identifier of the purchase transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "sales/{saleId}",
+        "definition": {
+          "entityName": "Sale",
+          "schema": {
+            "$ref": "#/backend/entities/Sale"
+          },
+          "description": "Stores sales transactions, including counter sales and delivery boy sales. Accessible to authorized agency personnel. Includes 'deliveryBoyId' for associating sales with delivery boys.",
+          "params": [
+            {
+              "name": "saleId",
+              "description": "The unique identifier of the sale transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "expenses/{expenseId}",
+        "definition": {
+          "entityName": "Expense",
+          "schema": {
+            "$ref": "#/backend/entities/Expense"
+          },
+          "description": "Stores expense records. Accessible to authorized agency personnel.",
+          "params": [
+            {
+              "name": "expenseId",
+              "description": "The unique identifier of the expense."
+            }
+          ]
+        }
+      },
+      {
+        "path": "delivery_boys/{deliveryBoyId}",
+        "definition": {
+          "entityName": "DeliveryBoy",
+          "schema": {
+            "$ref": "#/backend/entities/DeliveryBoy"
+          },
+          "description": "Stores delivery boy information.  Accessible to authorized agency personnel.",
+          "params": [
+            {
+              "name": "deliveryBoyId",
+              "description": "The unique identifier of the delivery boy."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to create an E-Ledger for Varnika Indane Gramin Vitarak, focusing on daily tracking of purchases, sales (counter and delivery boy), and expenses. The structure prioritizes Authorization Independence by avoiding `get()` calls in security rules. Data is segregated to maintain homogeneous security postures and follows consistent access modeling for private and collaborative data.\n\n**Authorization Independence:** There's no reliance on parent document data for child document access. All necessary authorization data (e.g., delivery boy ID for sales) is contained within the document itself, removing the need for `get()` calls in security rules.\n\n**QAPs (Rules are not Filters):**\n*   Secure `list` operations are supported via structural segregation. Each top-level collection (`purchases`, `sales`, `expenses`, `delivery_boys`) has a defined and consistent security posture, allowing rules to be applied effectively without filtering.\n*   Path-based ownership is used for the `users/{userId}` collection, ensuring that only the authenticated user can access their profile data."
+  }
+}

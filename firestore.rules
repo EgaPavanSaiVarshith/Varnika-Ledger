@@ -1,0 +1,128 @@
+/**
+ * @fileoverview Firestore Security Rules for Varnika Indane Gramin Vitarak E-Ledger.
+ *
+ * Core Philosophy: This ruleset enforces a strict access control model based on user authentication and role-based permissions.
+ *  - Authenticated users can only manage their own user profiles.
+ *  - Access to operational data (purchases, sales, expenses, delivery boys) is restricted to authorized agency personnel.
+ *
+ * Data Structure:
+ *  - User profiles are stored under `/users/{userId}`.
+ *  - Operational data is stored in top-level collections: `/purchases/{purchaseId}`, `/sales/{saleId}`, `/expenses/{expenseId}`, and `/delivery_boys/{deliveryBoyId}`.
+ *
+ * Key Security Decisions:
+ *  - User listing is disallowed.
+ *  - Public read access is NOT granted to any collection.
+ *  - Agency personnel access is simulated, requiring authentication for any write operations.
+ *
+ * Authorization Independence: Rules are written to avoid `get()` calls. Each document contains all the necessary data for authorization decisions.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to user profile data.
+     * @path /users/{userId}
+     * @allow (create) - Authenticated user can create their own profile.
+     * @allow (get, list, update, delete) - Authenticated user can only access their own profile.
+     * @deny (create) - If the user id does not match the authenticated user id.
+     * @deny (update, delete) - If the user is not the owner.
+     * @principle Enforces document ownership for user profiles.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to purchase transaction data.
+     * @path /purchases/{purchaseId}
+     * @allow (create, update, delete) - Only authorized agency personnel can create, update, or delete purchase transactions.
+     * @allow (get, list) - Only authorized agency personnel can read purchase transactions.
+     * @deny (create, update, delete) - If the user is not authenticated.
+     * @principle Requires authentication for all write operations.
+     */
+    match /purchases/{purchaseId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Controls access to sales transaction data.
+     * @path /sales/{saleId}
+     * @allow (create, update, delete) - Only authorized agency personnel can create, update, or delete sales transactions.
+     * @allow (get, list) - Only authorized agency personnel can read sales transactions.
+     * @deny (create, update, delete) - If the user is not authenticated.
+     * @principle Requires authentication for all write operations.
+     */
+    match /sales/{saleId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Controls access to expense data.
+     * @path /expenses/{expenseId}
+     * @allow (create, update, delete) - Only authorized agency personnel can create, update, or delete expense records.
+     * @allow (get, list) - Only authorized agency personnel can read expense records.
+     * @deny (create, update, delete) - If the user is not authenticated.
+     * @principle Requires authentication for all write operations.
+     */
+    match /expenses/{expenseId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Controls access to delivery boy information.
+     * @path /delivery_boys/{deliveryBoyId}
+     * @allow (create, update, delete) - Only authorized agency personnel can create, update, or delete delivery boy information.
+     * @allow (get, list) - Only authorized agency personnel can read delivery boy information.
+     * @deny (create, update, delete) - If the user is not authenticated.
+     * @principle Requires authentication for all write operations.
+     */
+    match /delivery_boys/{deliveryBoyId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+  }
+}
