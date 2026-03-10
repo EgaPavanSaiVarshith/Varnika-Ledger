@@ -1,10 +1,8 @@
-'use server';
-
 import { getTransactionsFromFile } from './db';
 import { Transaction, Stock, CylinderType } from './types';
 import { CYLINDER_TYPES } from './constants';
 
-// Simulate fetching all transactions
+// Fetch all transactions (server-side only, not a server action)
 export async function getTransactions(): Promise<Transaction[]> {
   const transactions = await getTransactionsFromFile();
   return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

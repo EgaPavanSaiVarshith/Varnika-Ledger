@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getTransactions } from '@/lib/api';
+import { getTransactionsAction } from '@/lib/actions';
 import { DataTable } from '@/components/transactions/data-table';
 import type { Transaction } from '@/lib/types';
 import OverviewCards from '@/components/dashboard/overview-cards';
@@ -41,7 +41,7 @@ export default function MonthlyReportsPage() {
 
   useEffect(() => {
     setLoading(true);
-    getTransactions().then((data) => {
+    getTransactionsAction().then((data) => {
       setAllTransactions(data);
       setLoading(false);
     });

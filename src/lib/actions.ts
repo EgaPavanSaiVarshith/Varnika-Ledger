@@ -8,6 +8,18 @@ import { Transaction, CylinderCosts } from './types';
 import { CHIT_HOLDERS, OTHER_PRODUCTS, CYLINDER_TYPES, EXPENSE_CATEGORIES, SALE_TYPES, MINI_BANK_DESCRIPTIONS, DELIVERY_BOYS, ACCOUNTANTS } from './constants';
 
 
+// Server action for client components to fetch transactions
+export async function getTransactionsAction() {
+  const transactions = await getTransactionsFromFile();
+  return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+export async function formatTransactionsForAIAction(transactions: Transaction[]) {
+  // We can just import and call the regular server function from here
+  const { formatTransactionsForAI } = await import('./api');
+  return formatTransactionsForAI(transactions);
+}
+
 const saleSchema = z.object({
   type: z.literal('Sale'),
   date: z.string(),

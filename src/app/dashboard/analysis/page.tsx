@@ -13,7 +13,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles } from 'lucide-react';
-import { getTransactions, formatTransactionsForAI } from '@/lib/api';
+import { getTransactionsAction, formatTransactionsForAIAction } from '@/lib/actions';
 import { analyzeTransactions } from '@/ai/flows/cost-savings-analysis';
 import type { CostSavingsAnalysisOutput } from '@/ai/flows/cost-savings-analysis';
 
@@ -26,7 +26,7 @@ export default function AnalysisPage() {
     setLoading(true);
     setAnalysisResult(null);
     try {
-      const transactions = await getTransactions();
+      const transactions = await getTransactionsAction();
       if (transactions.length === 0) {
         toast({
           variant: 'destructive',
@@ -35,7 +35,7 @@ export default function AnalysisPage() {
         });
         return;
       }
-      const formattedData = await formatTransactionsForAI(transactions);
+      const formattedData = await formatTransactionsForAIAction(transactions);
       const result = await analyzeTransactions({ transactionHistory: formattedData });
       setAnalysisResult(result);
     } catch (error) {
