@@ -2,7 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { getTransactionsFromFile, saveTransactionsToFile } from './db';
+import { 
+  getTransactionsFromFirestore, 
+  addTransactionToFirestore, 
+  updateTransactionInFirestore, 
+  deleteTransactionFromFirestore 
+} from './db';
 import { mockCylinderCosts } from './data';
 import { Transaction, CylinderCosts } from './types';
 import { CHIT_HOLDERS, OTHER_PRODUCTS, CYLINDER_TYPES, EXPENSE_CATEGORIES, SALE_TYPES, MINI_BANK_DESCRIPTIONS, DELIVERY_BOYS, ACCOUNTANTS } from './constants';
@@ -10,7 +15,7 @@ import { CHIT_HOLDERS, OTHER_PRODUCTS, CYLINDER_TYPES, EXPENSE_CATEGORIES, SALE_
 
 // Server action for client components to fetch transactions
 export async function getTransactionsAction() {
-  const transactions = await getTransactionsFromFile();
+  const transactions = await getTransactionsFromFirestore();
   return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
@@ -63,48 +68,26 @@ export async function addTransaction(data: unknown) {
     id: `txn_${Date.now()}`,
   } as Transaction;
 
-  console.log('New transaction added:', transactionWithId);
-
-  const transactions = await getTransactionsFromFile();
-  transactions.unshift(transactionWithId);
-  await saveTransactionsToFile(transactions);
+  console.log('Adding new transaction to Firestore:', transactionWithId.id);
+  await addTransactionToFirestore(transactionWithId);
 
   revalidatePath('/', 'layout');
 }
 
 export async function updateTransaction(id: string, data: unknown) {
     const updatedTransactionData = transactionSchema.parse(data);
-    const transactions = await getTransactionsFromFile();
-    const index = transactions.findIndex(t => t.id === id);
-
-    if (index === -1) {
-        throw new Error('Transaction not found');
-    }
-
-    const existingTransaction = transactions[index];
     
-    transactions[index] = {
-        ...existingTransaction,
-        ...updatedTransactionData,
-    } as Transaction;
-
-    await saveTransactionsToFile(transactions);
-    console.log('Transaction updated:', transactions[index]);
+    console.log('Updating transaction in Firestore:', id);
+    await updateTransactionInFirestore(id, updatedTransactionData);
 
     revalidatePath('/', 'layout');
 }
 
 export async function deleteTransaction(id: string) {
-    let transactions = await getTransactionsFromFile();
-    const index = transactions.findIndex(t => t.id === id);
-    if (index > -1) {
-        transactions.splice(index, 1);
-        await saveTransactionsToFile(transactions);
-        console.log('Transaction deleted:', id);
-        revalidatePath('/', 'layout');
-    } else {
-        throw new Error('Transaction not found');
-    }
+    console.log('Deleting transaction from Firestore:', id);
+    await deleteTransactionFromFirestore(id);
+    
+    revalidatePath('/', 'layout');
 }
 
 export async function getCylinderCosts(): Promise<CylinderCosts> {

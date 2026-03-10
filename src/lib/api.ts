@@ -1,10 +1,10 @@
-import { getTransactionsFromFile } from './db';
+import { getTransactionsFromFirestore } from './db';
 import { Transaction, Stock, CylinderType } from './types';
 import { CYLINDER_TYPES } from './constants';
 
 // Fetch all transactions (server-side only, not a server action)
 export async function getTransactions(): Promise<Transaction[]> {
-  const transactions = await getTransactionsFromFile();
+  const transactions = await getTransactionsFromFirestore();
   return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
