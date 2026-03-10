@@ -1,20 +1,57 @@
-export const dynamic = 'force-dynamic';
+'use client';
 
-import { PlusCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { PlusCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import OverviewCards from '@/components/dashboard/overview-cards';
 import StockStatus from '@/components/dashboard/stock-status';
 import RecentTransactions from '@/components/dashboard/recent-transactions';
 import TransactionDialog from '@/components/transactions/transaction-dialog';
-import { getTransactions, getAccountSummary, getStockStatus } from '@/lib/api';
+import { getAccountSummary, getStockStatus } from '@/lib/api';
+import { getTransactionsFromFirestore } from '@/lib/db';
+import { formatTransactionsForAIAction } from '@/lib/actions';
+import { DataTable } from '@/components/transactions/data-table';
 import AccountantSelector from '@/components/dashboard/accountant-selector';
+import type { Transaction, Stock } from '@/lib/types';
 
-export default async function Dashboard({}: {}) {
-  const transactions = await getTransactions();
-  const [summary, stock] = await Promise.all([
-    getAccountSummary(transactions),
-    getStockStatus(transactions),
-  ]);
+export default function Dashboard() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summary, setSummary] = useState({ totalSales: 0, totalExpenses: 0, closingBalance: 0 });
+  const [stock, setStock] = useState<Stock>({
+    "14.2kg": 0,
+    "19kg (Commercial)": 0,
+    "10kg": 0,
+    "5kg": 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const txs = await getTransactionsFromFirestore();
+        const [sum, stk] = await Promise.all([
+          getAccountSummary(txs),
+          getStockStatus(txs),
+        ]);
+        setTransactions(txs);
+        setSummary(sum);
+        setStock(stk);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -40,3 +77,4 @@ export default async function Dashboard({}: {}) {
     </>
   );
 }
+

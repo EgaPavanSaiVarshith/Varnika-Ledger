@@ -1,6 +1,7 @@
-export const dynamic = 'force-dynamic';
+'use client';
 
-import { getTransactions } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import { getTransactionsFromFirestore } from '@/lib/db';
 import { DataTable } from '@/components/transactions/data-table';
 import {
   Card,
@@ -9,9 +10,24 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
+import type { Transaction } from '@/lib/types';
 
-export default async function ReportsPage({}: {}) {
-  const transactions = await getTransactions();
+export default function ReportsPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getTransactionsFromFirestore().then(setTransactions).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -32,3 +48,4 @@ export default async function ReportsPage({}: {}) {
     </div>
   );
 }
+

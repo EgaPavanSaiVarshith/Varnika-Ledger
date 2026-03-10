@@ -1,28 +1,37 @@
 // src/lib/db.ts
-import 'server-only';
 import { Transaction } from './types';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 
-// Initialize Firebase for server-side usage
+// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
+export const db = getFirestore(app);
 
-// Collection reference
-const transactionsCollection = collection(db, 'transactions');
+// Collection references
+export const salesCollection = collection(db, 'sales');
+export const purchasesCollection = collection(db, 'purchases');
+export const expensesCollection = collection(db, 'expenses');
 
 /**
- * Fetches all transactions from Firestore
+ * Fetches all transactions from Firestore by combining sales, purchases, and expenses.
+ * Note: This may fail on the server if security rules require authentication.
  */
 export async function getTransactionsFromFirestore(): Promise<Transaction[]> {
   try {
-    const snapshot = await getDocs(transactionsCollection);
+    const [salesSnap, purchasesSnap, expensesSnap] = await Promise.all([
+      getDocs(query(salesCollection, orderBy('date', 'desc'))),
+      getDocs(query(purchasesCollection, orderBy('date', 'desc'))),
+      getDocs(query(expensesCollection, orderBy('date', 'desc')))
+    ]);
+
     const transactions: Transaction[] = [];
-    snapshot.forEach((doc) => {
-      transactions.push(doc.data() as Transaction);
-    });
-    return transactions;
+    
+    salesSnap.forEach(doc => transactions.push({ ...doc.data(), id: doc.id, type: 'Sale' } as Transaction));
+    purchasesSnap.forEach(doc => transactions.push({ ...doc.data(), id: doc.id, type: 'Purchase' } as Transaction));
+    expensesSnap.forEach(doc => transactions.push({ ...doc.data(), id: doc.id, type: 'Expense' } as Transaction));
+
+    return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   } catch (error) {
     console.error('Error fetching transactions from Firestore:', error);
     throw new Error('Could not read from database.');
@@ -30,11 +39,12 @@ export async function getTransactionsFromFirestore(): Promise<Transaction[]> {
 }
 
 /**
- * Adds a new transaction to Firestore
+ * Adds a new transaction to Firestore in the appropriate collection
  */
 export async function addTransactionToFirestore(transaction: Transaction): Promise<void> {
   try {
-    const docRef = doc(db, 'transactions', transaction.id);
+    const collectionName = transaction.type === 'Sale' ? 'sales' : transaction.type === 'Purchase' ? 'purchases' : 'expenses';
+    const docRef = doc(db, collectionName, transaction.id);
     await setDoc(docRef, transaction);
   } catch (error) {
     console.error('Error adding transaction to Firestore:', error);
@@ -45,9 +55,10 @@ export async function addTransactionToFirestore(transaction: Transaction): Promi
 /**
  * Updates an existing transaction in Firestore
  */
-export async function updateTransactionInFirestore(id: string, data: Partial<Transaction>): Promise<void> {
+export async function updateTransactionInFirestore(id: string, type: string, data: Partial<Transaction>): Promise<void> {
   try {
-    const docRef = doc(db, 'transactions', id);
+    const collectionName = type === 'Sale' ? 'sales' : type === 'Purchase' ? 'purchases' : 'expenses';
+    const docRef = doc(db, collectionName, id);
     await updateDoc(docRef, data);
   } catch (error) {
     console.error('Error updating transaction in Firestore:', error);
@@ -58,9 +69,10 @@ export async function updateTransactionInFirestore(id: string, data: Partial<Tra
 /**
  * Deletes a transaction from Firestore
  */
-export async function deleteTransactionFromFirestore(id: string): Promise<void> {
+export async function deleteTransactionFromFirestore(id: string, type: string): Promise<void> {
   try {
-    const docRef = doc(db, 'transactions', id);
+    const collectionName = type === 'Sale' ? 'sales' : type === 'Purchase' ? 'purchases' : 'expenses';
+    const docRef = doc(db, collectionName, id);
     await deleteDoc(docRef);
   } catch (error) {
     console.error('Error deleting transaction from Firestore:', error);

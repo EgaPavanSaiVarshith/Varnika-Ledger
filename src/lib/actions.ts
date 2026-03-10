@@ -74,18 +74,18 @@ export async function addTransaction(data: unknown) {
   revalidatePath('/', 'layout');
 }
 
-export async function updateTransaction(id: string, data: unknown) {
+export async function updateTransaction(id: string, type: string, data: unknown) {
     const updatedTransactionData = transactionSchema.parse(data);
     
     console.log('Updating transaction in Firestore:', id);
-    await updateTransactionInFirestore(id, updatedTransactionData);
+    await updateTransactionInFirestore(id, type, updatedTransactionData);
 
     revalidatePath('/', 'layout');
 }
 
-export async function deleteTransaction(id: string) {
+export async function deleteTransaction(id: string, type: string) {
     console.log('Deleting transaction from Firestore:', id);
-    await deleteTransactionFromFirestore(id);
+    await deleteTransactionFromFirestore(id, type);
     
     revalidatePath('/', 'layout');
 }

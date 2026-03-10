@@ -45,7 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { deleteTransaction } from '@/lib/actions';
+import { deleteTransactionFromFirestore } from '@/lib/db';
 import { useToast } from '@/hooks/use-toast';
 import { format, parseISO } from 'date-fns';
 
@@ -61,11 +61,11 @@ export function DataTable({ data }: { data: Transaction[] }) {
   const handleDelete = async () => {
     if (selectedTransaction) {
       try {
-        await deleteTransaction(selectedTransaction.id);
+        await deleteTransactionFromFirestore(selectedTransaction.id, selectedTransaction.type);
         toast({ title: 'Success!', description: 'Transaction deleted successfully.' });
         setIsDeleteDialogOpen(false);
         setSelectedTransaction(null);
-        // This will trigger a re-fetch in the parent component
+        // On the client we should probably trigger a refresh via state, but reload is safe for now
         window.location.reload();
       } catch (error) {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete transaction.' });

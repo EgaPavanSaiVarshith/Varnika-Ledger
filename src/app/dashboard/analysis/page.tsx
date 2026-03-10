@@ -13,7 +13,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles } from 'lucide-react';
-import { getTransactionsAction, formatTransactionsForAIAction } from '@/lib/actions';
+import { getTransactionsFromFirestore } from '@/lib/db';
+import { formatTransactionsForAIAction } from '@/lib/actions';
 import { analyzeTransactions } from '@/ai/flows/cost-savings-analysis';
 import type { CostSavingsAnalysisOutput } from '@/ai/flows/cost-savings-analysis';
 
@@ -26,7 +27,7 @@ export default function AnalysisPage() {
     setLoading(true);
     setAnalysisResult(null);
     try {
-      const transactions = await getTransactionsAction();
+      const transactions = await getTransactionsFromFirestore();
       if (transactions.length === 0) {
         toast({
           variant: 'destructive',

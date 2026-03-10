@@ -25,7 +25,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { addTransaction, updateTransaction, getCylinderCosts } from '@/lib/actions';
+import { addTransactionToFirestore, updateTransactionInFirestore } from '@/lib/db';
+import { getCylinderCosts } from '@/lib/actions';
 import { CYLINDER_TYPES, DELIVERY_BOYS, SALE_TYPES, EXPENSE_CATEGORIES, CHIT_HOLDERS, OTHER_PRODUCTS, ACCOUNTANTS, MINI_BANK_DESCRIPTIONS } from '@/lib/constants';
 import { TransactionType, CylinderType, Transaction, CylinderCosts, SaleTransaction, PurchaseTransaction, ExpenseTransaction } from '@/lib/types';
 import { useAccountantStore } from '@/stores/accountant-store';
@@ -188,13 +189,17 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
 
     try {
       if (isEditMode && transaction) {
-        await updateTransaction(transaction.id, payload);
+        await updateTransactionInFirestore(transaction.id, transaction.type, payload);
         toast({
           title: 'Success!',
           description: `Your ${type.toLowerCase()} has been updated.`,
         });
       } else {
-        await addTransaction(payload);
+        const transactionWithId = {
+          ...payload,
+          id: `txn_${Date.now()}`,
+        } as any;
+        await addTransactionToFirestore(transactionWithId);
         toast({
           title: 'Success!',
           description: `Your ${type.toLowerCase()} has been recorded.`,
