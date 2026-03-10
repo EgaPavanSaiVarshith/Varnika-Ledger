@@ -1,10 +1,13 @@
 // src/lib/db.ts
-import fs from 'fs/promises';
+import 'server-only';
 import path from 'path';
 import { Transaction } from './types';
 
 // The path to the JSON file that will act as our database
 const dbPath = path.join(process.cwd(), 'src', 'data', 'transactions.json');
+
+// Lazy load fs/promises to avoid client-side bundling issues during compilation
+const getFs = () => require('fs/promises');
 
 // In-memory cache to avoid re-reading the file on every request
 let cachedTransactions: Transaction[] | null = null;
@@ -22,6 +25,7 @@ export async function getTransactionsFromFile(): Promise<Transaction[]> {
   }
 
   try {
+    const fs = getFs();
     const fileContents = await fs.readFile(dbPath, 'utf8');
     // If the file is empty, return an empty array
     if (!fileContents) {
@@ -53,6 +57,7 @@ export async function getTransactionsFromFile(): Promise<Transaction[]> {
  */
 export async function saveTransactionsToFile(transactions: Transaction[]): Promise<void> {
   try {
+    const fs = getFs();
     const data = JSON.stringify(transactions, null, 2); // Pretty-print the JSON
     await fs.writeFile(dbPath, data, 'utf8');
     // Invalidate cache so next read gets fresh data

@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "type": "Sale",
+    "date": "2026-03-10T16:59:26.260Z",
+    "accountant": "Ega Kanya Kumari",
+    "cylinderType": "14.2kg",
+    "quantity": 1,
+    "saleType": "Counter Sale",
+    "amount": 900,
+    "id": "txn_1773162094009"
+  },
+  {
+    "type": "Sale",
+    "date": "2026-03-10T16:55:51.273Z",
+    "accountant": "Ega Kanya Kumari",
+    "cylinderType": "14.2kg",
+    "quantity": 1,
+    "saleType": "Counter Sale",
+    "amount": 960,
+    "id": "txn_1773161778270"
+  }
+]
