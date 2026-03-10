@@ -9,8 +9,10 @@ import AccountantSelector from '@/components/dashboard/accountant-selector';
 
 export default async function Dashboard({}: {}) {
   const transactions = await getTransactions();
-  const summary = await getAccountSummary(transactions);
-  const stock = await getStockStatus(transactions);
+  const [summary, stock] = await Promise.all([
+    getAccountSummary(transactions),
+    getStockStatus(transactions),
+  ]);
 
   return (
     <>
