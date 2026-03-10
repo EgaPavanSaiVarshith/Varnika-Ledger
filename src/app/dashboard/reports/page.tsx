@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getTransactions } from '@/lib/api';
 import { DataTable } from '@/components/transactions/data-table';
 import {

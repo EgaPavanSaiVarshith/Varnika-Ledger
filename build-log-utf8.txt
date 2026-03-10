@@ -1,0 +1,130 @@
+﻿   Γû▓ Next.js 15.3.8
+   - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 49s
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/11) ...
+node.exe : Automatic 
+initialization 
+failed. Falling back 
+to firebase config 
+object. Error 
+[FirebaseError]: 
+Firebase: Need to 
+provide options, when 
+not being deployed to 
+hosting via source. 
+(app/no-options).
+At C:\Program Files\no
+dejs\npx.ps1:29 char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Automatic    
+ initi...pp/no-opt    
+ions).:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+    at Q (C:\Users\psv
+ar\OneDrive\Desktop\Va
+rnika\.next\server\chu
+nks\520.js:5:33073)
+    at A (C:\Users\psv
+ar\OneDrive\Desktop\Va
+rnika\.next\server\chu
+nks\935.js:2:1082)
+    at <unknown> (C:\U
+sers\psvar\OneDrive\De
+sktop\Varnika\.next\se
+rver\chunks\935.js:1:3
+496)
+    at l (C:\Users\psv
+ar\OneDrive\Desktop\Va
+rnika\.next\server\chu
+nks\935.js:1:3491) {
+  code: 
+'app/no-options',
+  customData: {}
+}
+   Generating static pages (2/11) 
+   Generating static pages (5/11) 
+   Generating static pages (8/11) 
+Error fetching 
+transactions from 
+Firestore: [Error 
+[FirebaseError]: 
+Missing or 
+insufficient 
+permissions.] {
+  code: 
+'permission-denied',
+  customData: 
+undefined,
+  toString: [Function 
+(anonymous)]
+}
+Error fetching 
+transactions from 
+Firestore: [Error 
+[FirebaseError]: 
+Missing or 
+insufficient 
+permissions.] {
+  code: 
+'permission-denied',
+  customData: 
+undefined,
+  toString: [Function 
+(anonymous)]
+}
+Error occurred 
+prerendering page 
+"/dashboard/reports". 
+Read more: https://nex
+tjs.org/docs/messages/
+prerender-error
+Error: Could not read 
+from database.
+    at d (C:\Users\psv
+ar\OneDrive\Desktop\Va
+rnika\.next\server\app
+\dashboard\reports\pag
+e.js:1:4515)
+    at runNextTicks (n
+ode:internal/process/t
+ask_queues:65:5)
+    at listOnTimeout (
+node:internal/timers:5
+49:9)
+    at 
+process.processTimers 
+(node:internal/timers:
+523:7)
+    at async l (C:\Use
+rs\psvar\OneDrive\Desk
+top\Varnika\.next\serv
+er\app\dashboard\repor
+ts\page.js:1:4596)
+    at async o (C:\Use
+rs\psvar\OneDrive\Desk
+top\Varnika\.next\serv
+er\app\dashboard\repor
+ts\page.js:1:2823)
+Export encountered an 
+error on /dashboard/re
+ports/page: 
+/dashboard/reports, 
+exiting the build.
+ Γ¿» Next.js build 
+worker exited with 
+code: 1 and signal: 
+null

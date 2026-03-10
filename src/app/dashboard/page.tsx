@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import OverviewCards from '@/components/dashboard/overview-cards';
