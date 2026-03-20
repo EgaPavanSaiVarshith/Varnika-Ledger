@@ -45,7 +45,8 @@ export async function addTransactionToFirestore(transaction: Transaction): Promi
   try {
     const collectionName = transaction.type === 'Sale' ? 'sales' : transaction.type === 'Purchase' ? 'purchases' : 'expenses';
     const docRef = doc(db, collectionName, transaction.id);
-    await setDoc(docRef, transaction);
+    const cleanData = Object.fromEntries(Object.entries(transaction).filter(([_, v]) => v !== undefined));
+    await setDoc(docRef, cleanData);
   } catch (error) {
     console.error('Error adding transaction to Firestore:', error);
     throw new Error('Could not add to database.');
@@ -59,7 +60,8 @@ export async function updateTransactionInFirestore(id: string, type: string, dat
   try {
     const collectionName = type === 'Sale' ? 'sales' : type === 'Purchase' ? 'purchases' : 'expenses';
     const docRef = doc(db, collectionName, id);
-    await updateDoc(docRef, data);
+    const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+    await updateDoc(docRef, cleanData);
   } catch (error) {
     console.error('Error updating transaction in Firestore:', error);
     throw new Error('Could not update database.');
