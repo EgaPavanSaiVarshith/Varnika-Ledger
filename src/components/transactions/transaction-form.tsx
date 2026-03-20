@@ -162,7 +162,7 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
   const expenseCategory = watchedType === 'Expense' ? form.watch('category') : undefined;
 
 
-  const isAmountReadOnly = watchedType === 'Sale' && saleType !== 'Other Sale';
+  const isAmountReadOnly = false; // Restored manual entry as per user request
 
   useEffect(() => {
     if (!isEditMode && type === 'Sale' && quantity && quantity > 0) {
