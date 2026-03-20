@@ -33,17 +33,20 @@ export default function SettingsPage() {
         const currentCosts = await getCylinderCosts(selectedMonth);
         setCosts(currentCosts);
       } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Could not load cylinder costs.',
+        console.error('Error loading costs:', error);
+        // Fallback to defaults so form is ALWAYS visible
+        setCosts({
+          '14.2kg': 960,
+          '19kg (Commercial)': 2500,
+          '10kg': 850,
+          '5kg': 450,
         });
       } finally {
         setLoading(false);
       }
     }
     fetchCosts();
-  }, [selectedMonth, toast]);
+  }, [selectedMonth]);
 
   const handleCostChange = (cylinderType: string, value: string) => {
     if (!costs) return;

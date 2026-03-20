@@ -95,7 +95,7 @@ export async function getCylinderCostsFromFirestore(monthStr?: string) {
       allData = docSnap.data();
     }
     
-    const defaultCosts = {
+    const defaultCosts: Record<string, number> = {
       '14.2kg': 960,
       '19kg (Commercial)': 2500,
       '10kg': 850,
@@ -103,8 +103,9 @@ export async function getCylinderCostsFromFirestore(monthStr?: string) {
     };
 
     if (monthStr) {
-      if (allData[monthStr]) return allData[monthStr];
-      if (allData['14.2kg'] !== undefined) return {
+      if (allData && allData[monthStr]) return allData[monthStr];
+      // Fallback to legacy structure or defaults
+      if (allData && allData['14.2kg'] !== undefined) return {
         '14.2kg': allData['14.2kg'],
         '19kg (Commercial)': allData['19kg (Commercial)'],
         '10kg': allData['10kg'],
@@ -113,10 +114,16 @@ export async function getCylinderCostsFromFirestore(monthStr?: string) {
       return defaultCosts;
     }
     
-    return allData;
+    return allData || {};
   } catch (error) {
-    console.error('Error fetching cylinder costs:', error);
-    throw new Error('Could not fetch settings from database.');
+    console.error('Error in getCylinderCostsFromFirestore:', error);
+    // Return defaults instead of throwing to avoid UI crash
+    return {
+      '14.2kg': 960,
+      '19kg (Commercial)': 2500,
+      '10kg': 850,
+      '5kg': 450,
+    };
   }
 }
 
