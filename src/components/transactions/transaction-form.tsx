@@ -27,14 +27,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { addTransactionToFirestore, updateTransactionInFirestore } from '@/lib/db';
-import { getCylinderCosts } from '@/lib/actions';
-import { CYLINDER_TYPES, DELIVERY_BOYS, SALE_TYPES, EXPENSE_CATEGORIES, CHIT_HOLDERS, OTHER_PRODUCTS, OTHER_PRODUCT_PRICES, ACCOUNTANTS, MINI_BANK_DESCRIPTIONS } from '@/lib/constants';
-import { TransactionType, CylinderType, Transaction, CylinderCosts, SaleTransaction, PurchaseTransaction, ExpenseTransaction } from '@/lib/types';
+import { getPrices } from '@/lib/actions';
+import { CYLINDER_TYPES, DELIVERY_BOYS, SALE_TYPES, EXPENSE_CATEGORIES, CHIT_HOLDERS, OTHER_PRODUCTS, ACCOUNTANTS, MINI_BANK_DESCRIPTIONS } from '@/lib/constants';
+import { TransactionType, CylinderType, Transaction, SaleTransaction, PurchaseTransaction, ExpenseTransaction } from '@/lib/types';
 import { useAccountantStore } from '@/stores/accountant-store';
 
 const baseSchema = z.object({
   date: z.date(),
-  amount: z.coerce.number().positive({ message: 'Amount must be positive.' }),
+  amount: z.coerce.number().min(0, { message: 'Amount cannot be negative.' }),
   accountant: z.enum(ACCOUNTANTS),
 });
 
@@ -43,11 +43,11 @@ const saleSchema = z.object({
   date: z.date(),
   accountant: z.enum(ACCOUNTANTS),
   cylinderType: z.enum(CYLINDER_TYPES).optional(),
-  quantity: z.coerce.number().int().positive().optional(),
+  quantity: z.coerce.number().int().min(1).optional(),
   saleType: z.enum(SALE_TYPES, { required_error: 'Sale type is required.' }),
   deliveryBoy: z.enum(DELIVERY_BOYS).optional(),
   otherProduct: z.enum(OTHER_PRODUCTS).optional(),
-  amount: z.coerce.number().positive({ message: 'Amount must be positive.' }),
+  amount: z.coerce.number().min(0, { message: 'Amount cannot be negative.' }),
 });
 
 const purchaseSchema = z.object({
@@ -81,7 +81,7 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
   const { toast } = useToast();
   const router = useRouter();
   const isEditMode = !!transaction;
-  const [cylinderCosts, setCylinderCosts] = useState<CylinderCosts | null>(null);
+  const [allPrices, setAllPrices] = useState<any>(null);
   const { accountant } = useAccountantStore();
 
 
@@ -144,14 +144,14 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
   const watchedDate = form.watch('date');
 
   useEffect(() => {
-    async function fetchCosts() {
+    async function fetchAllPrices() {
       if (watchedDate) {
         const monthStr = format(watchedDate, 'yyyy-MM');
-        const costs = await getCylinderCosts(monthStr);
-        setCylinderCosts(costs);
+        const data = await getPrices(monthStr);
+        setAllPrices(data);
       }
     }
-    fetchCosts();
+    fetchAllPrices();
   }, [watchedDate]);
   
   const watchedType = form.watch('type');
@@ -165,15 +165,20 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
   const isAmountReadOnly = false; // Restored manual entry as per user request
 
   useEffect(() => {
-    if (!isEditMode && type === 'Sale' && quantity && quantity > 0) {
-      if (saleType !== 'Other Sale' && cylinderType && cylinderCosts) {
-        const cost = cylinderCosts[cylinderType as CylinderType];
+    if (!isEditMode && type === 'Sale' && quantity && quantity > 0 && allPrices) {
+      if (saleType !== 'Other Sale' && cylinderType) {
+        const cost = allPrices.cylinderCosts[cylinderType as CylinderType];
+        if (cost !== undefined) {
+          form.setValue('amount', cost * quantity);
+        }
+      } else if (saleType === 'Other Sale' && otherProduct) {
+        const cost = allPrices.otherProductPrices[otherProduct];
         if (cost !== undefined) {
           form.setValue('amount', cost * quantity);
         }
       }
     }
-  }, [cylinderType, quantity, type, form, isEditMode, saleType, cylinderCosts]);
+  }, [cylinderType, quantity, type, form, isEditMode, saleType, allPrices, otherProduct]);
   
   useEffect(() => {
     if (isEditMode && transaction) {

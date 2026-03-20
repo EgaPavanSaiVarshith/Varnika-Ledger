@@ -84,58 +84,60 @@ export async function deleteTransactionFromFirestore(id: string, type: string): 
 }
 
 /**
- * Gets the cylinder costs from Firestore
+ * Gets the prices (Cylinder and Other Products) from Firestore
  */
-export async function getCylinderCostsFromFirestore(monthStr?: string) {
+export async function getPricesFromFirestore(monthStr: string) {
   try {
-    const docRef = doc(db, 'settings', 'cylinderCosts');
+    const docRef = doc(db, 'settings', monthStr);
     const docSnap = await getDoc(docRef);
-    let allData: any = {};
-    if (docSnap.exists()) {
-      allData = docSnap.data();
-    }
     
-    const defaultCosts: Record<string, number> = {
+    const defaultCylinderCosts = {
       '14.2kg': 960,
       '19kg (Commercial)': 2500,
       '10kg': 850,
       '5kg': 450,
     };
+    
+    const defaultOtherPrices = {
+      'PR': 350,
+      'PIPE': 200,
+      'Deactivation': 200,
+      'Sales of gas book': 100,
+      'Lighter': 0,
+      'Stoves': 0,
+      'Unloading charges from driver': 0
+    };
 
-    if (monthStr) {
-      if (allData && allData[monthStr]) return allData[monthStr];
-      // Fallback to legacy structure or defaults
-      if (allData && allData['14.2kg'] !== undefined) return {
-        '14.2kg': allData['14.2kg'],
-        '19kg (Commercial)': allData['19kg (Commercial)'],
-        '10kg': allData['10kg'],
-        '5kg': allData['5kg'],
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      return {
+        cylinderCosts: data.cylinderCosts || defaultCylinderCosts,
+        otherProductPrices: data.otherProductPrices || defaultOtherPrices
       };
-      return defaultCosts;
     }
     
-    return allData || {};
-  } catch (error) {
-    console.error('Error in getCylinderCostsFromFirestore:', error);
-    // Return defaults instead of throwing to avoid UI crash
     return {
-      '14.2kg': 960,
-      '19kg (Commercial)': 2500,
-      '10kg': 850,
-      '5kg': 450,
+      cylinderCosts: defaultCylinderCosts,
+      otherProductPrices: defaultOtherPrices
+    };
+  } catch (error) {
+    console.error('Error in getPricesFromFirestore:', error);
+    return {
+      cylinderCosts: { '14.2kg': 960, '19kg (Commercial)': 2500, '10kg': 850, '5kg': 450 },
+      otherProductPrices: { 'PR': 350, 'PIPE': 200, 'Deactivation': 200, 'Sales of gas book': 100 }
     };
   }
 }
 
 /**
- * Updates the cylinder costs in Firestore
+ * Updates prices in Firestore
  */
-export async function updateCylinderCostsInFirestore(monthStr: string, costs: any): Promise<void> {
+export async function updatePricesInFirestore(monthStr: string, prices: any): Promise<void> {
   try {
-    const docRef = doc(db, 'settings', 'cylinderCosts');
-    await setDoc(docRef, { [monthStr]: costs }, { merge: true });
+    const docRef = doc(db, 'settings', monthStr);
+    await setDoc(docRef, prices, { merge: true });
   } catch (error) {
-    console.error('Error updating cylinder costs:', error);
+    console.error('Error updating prices:', error);
     throw new Error('Could not update settings in database.');
   }
 }

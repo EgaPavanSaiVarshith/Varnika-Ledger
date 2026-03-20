@@ -7,8 +7,8 @@ import {
   addTransactionToFirestore, 
   updateTransactionInFirestore, 
   deleteTransactionFromFirestore,
-  getCylinderCostsFromFirestore,
-  updateCylinderCostsInFirestore
+  getPricesFromFirestore,
+  updatePricesInFirestore
 } from './db';
 import { mockCylinderCosts } from './data';
 import { Transaction, CylinderCosts } from './types';
@@ -35,7 +35,7 @@ const saleSchema = z.object({
   quantity: z.coerce.number().optional(),
   saleType: z.enum(SALE_TYPES),
   deliveryBoy: z.enum(DELIVERY_BOYS).optional(),
-  amount: z.coerce.number(),
+  amount: z.coerce.number().min(0), // Changed from positive() to min(0)
   otherProduct: z.enum(OTHER_PRODUCTS).optional(),
 });
 
@@ -92,14 +92,24 @@ export async function deleteTransaction(id: string, type: string) {
     revalidatePath('/', 'layout');
 }
 
+export async function getPrices(monthStr: string) {
+  return await getPricesFromFirestore(monthStr);
+}
+
+export async function updatePrices(monthStr: string, prices: any) {
+  await updatePricesInFirestore(monthStr, prices);
+  revalidatePath('/dashboard/settings');
+  revalidatePath('/dashboard/transactions');
+}
+
+// Keep for backward compatibility in form for now, but redirect to getPrices
 export async function getCylinderCosts(monthStr?: string): Promise<CylinderCosts> {
-  const costs = await getCylinderCostsFromFirestore(monthStr);
-  return costs as CylinderCosts;
+  const prices = await getPricesFromFirestore(monthStr || new Date().toISOString().substring(0, 7));
+  return prices.cylinderCosts as CylinderCosts;
 }
 
 export async function updateCylinderCosts(monthStr: string, newCosts: CylinderCosts): Promise<void> {
-  console.log(`Updating cylinder costs for ${monthStr} in Firestore:`, newCosts);
-  await updateCylinderCostsInFirestore(monthStr, newCosts);
+  await updatePricesInFirestore(monthStr, { cylinderCosts: newCosts });
   revalidatePath('/dashboard/settings');
-  revalidatePath('/dashboard/transactions'); // Revalidate pages that use the costs
+  revalidatePath('/dashboard/transactions');
 }
