@@ -1,7 +1,7 @@
 // src/lib/db.ts
 import { Transaction } from './types';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, query, orderBy, getDoc } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 
 // Initialize Firebase
@@ -12,6 +12,7 @@ export const db = getFirestore(app);
 export const salesCollection = collection(db, 'sales');
 export const purchasesCollection = collection(db, 'purchases');
 export const expensesCollection = collection(db, 'expenses');
+export const settingsCollection = collection(db, 'settings');
 
 /**
  * Fetches all transactions from Firestore by combining sales, purchases, and expenses.
@@ -79,5 +80,41 @@ export async function deleteTransactionFromFirestore(id: string, type: string): 
   } catch (error) {
     console.error('Error deleting transaction from Firestore:', error);
     throw new Error('Could not delete from database.');
+  }
+}
+
+/**
+ * Gets the cylinder costs from Firestore
+ */
+export async function getCylinderCostsFromFirestore() {
+  try {
+    const docRef = doc(db, 'settings', 'cylinderCosts');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    // Default values if not strictly specified in DB yet
+    return {
+      '14.2kg': 900,
+      '19kg (Commercial)': 1800,
+      '10kg': 700,
+      '5kg': 300,
+    };
+  } catch (error) {
+    console.error('Error fetching cylinder costs:', error);
+    throw new Error('Could not fetch settings from database.');
+  }
+}
+
+/**
+ * Updates the cylinder costs in Firestore
+ */
+export async function updateCylinderCostsInFirestore(costs: any): Promise<void> {
+  try {
+    const docRef = doc(db, 'settings', 'cylinderCosts');
+    await setDoc(docRef, costs, { merge: true });
+  } catch (error) {
+    console.error('Error updating cylinder costs:', error);
+    throw new Error('Could not update settings in database.');
   }
 }

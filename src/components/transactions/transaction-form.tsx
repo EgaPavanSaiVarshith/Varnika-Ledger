@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 import { addTransactionToFirestore, updateTransactionInFirestore } from '@/lib/db';
 import { getCylinderCosts } from '@/lib/actions';
 import { CYLINDER_TYPES, DELIVERY_BOYS, SALE_TYPES, EXPENSE_CATEGORIES, CHIT_HOLDERS, OTHER_PRODUCTS, OTHER_PRODUCT_PRICES, ACCOUNTANTS, MINI_BANK_DESCRIPTIONS } from '@/lib/constants';
@@ -78,6 +79,7 @@ interface TransactionFormProps {
 
 export function TransactionForm({ type, onSuccess, transaction }: TransactionFormProps) {
   const { toast } = useToast();
+  const router = useRouter();
   const isEditMode = !!transaction;
   const [cylinderCosts, setCylinderCosts] = useState<CylinderCosts | null>(null);
   const { accountant } = useAccountantStore();
@@ -163,14 +165,10 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
         if (cost !== undefined) {
           form.setValue('amount', cost * quantity);
         }
-      } else if (saleType === 'Other Sale' && otherProduct) {
-        const cost = OTHER_PRODUCT_PRICES[otherProduct as keyof typeof OTHER_PRODUCT_PRICES];
-        if (cost !== undefined && cost !== 0) {
-          form.setValue('amount', cost * quantity);
-        }
-      }
+      } 
+      // User requested to enter manually the prices for "Other Sale"
     }
-  }, [cylinderType, quantity, type, form, isEditMode, saleType, cylinderCosts, otherProduct]);
+  }, [cylinderType, quantity, type, form, isEditMode, saleType, cylinderCosts]);
   
   useEffect(() => {
     if (isEditMode && transaction) {
@@ -215,6 +213,7 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
       }
       onSuccess();
       form.reset(getDefaultValues());
+      router.refresh();
     } catch (error) {
        toast({
         variant: 'destructive',

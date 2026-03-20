@@ -6,7 +6,9 @@ import {
   getTransactionsFromFirestore, 
   addTransactionToFirestore, 
   updateTransactionInFirestore, 
-  deleteTransactionFromFirestore 
+  deleteTransactionFromFirestore,
+  getCylinderCostsFromFirestore,
+  updateCylinderCostsInFirestore
 } from './db';
 import { mockCylinderCosts } from './data';
 import { Transaction, CylinderCosts } from './types';
@@ -91,23 +93,13 @@ export async function deleteTransaction(id: string, type: string) {
 }
 
 export async function getCylinderCosts(): Promise<CylinderCosts> {
-  // In a real app, this would fetch from a database or a config file
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(mockCylinderCosts);
-    }, 50);
-  });
+  const costs = await getCylinderCostsFromFirestore();
+  return costs as CylinderCosts;
 }
 
 export async function updateCylinderCosts(newCosts: CylinderCosts): Promise<void> {
-  // In a real app, you would save this to a database
-  console.log('Updating cylinder costs:', newCosts);
-  Object.assign(mockCylinderCosts, newCosts);
+  console.log('Updating cylinder costs in Firestore:', newCosts);
+  await updateCylinderCostsInFirestore(newCosts);
   revalidatePath('/dashboard/settings');
   revalidatePath('/dashboard/transactions'); // Revalidate pages that use the costs
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve();
-    }, 50);
-  });
 }
