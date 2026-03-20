@@ -7,8 +7,8 @@ export const mockTransactions: Transaction[] = [];
 
 // Mock data for cylinder costs. In a real app, this would be in a database.
 export const mockCylinderCosts: CylinderCosts = {
-    '14.2kg': 900,
-    '19kg (Commercial)': 1800,
-    '10kg': 700,
-    '5kg': 300,
+    '14.2kg': 960,
+    '19kg (Commercial)': 2500,
+    '10kg': 850,
+    '5kg': 450,
 };

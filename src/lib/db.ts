@@ -95,10 +95,10 @@ export async function getCylinderCostsFromFirestore() {
     }
     // Default values if not strictly specified in DB yet
     return {
-      '14.2kg': 900,
-      '19kg (Commercial)': 1800,
-      '10kg': 700,
-      '5kg': 300,
+      '14.2kg': 960,
+      '19kg (Commercial)': 2500,
+      '10kg': 850,
+      '5kg': 450,
     };
   } catch (error) {
     console.error('Error fetching cylinder costs:', error);
