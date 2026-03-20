@@ -27,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { addTransactionToFirestore, updateTransactionInFirestore } from '@/lib/db';
 import { getCylinderCosts } from '@/lib/actions';
-import { CYLINDER_TYPES, DELIVERY_BOYS, SALE_TYPES, EXPENSE_CATEGORIES, CHIT_HOLDERS, OTHER_PRODUCTS, ACCOUNTANTS, MINI_BANK_DESCRIPTIONS } from '@/lib/constants';
+import { CYLINDER_TYPES, DELIVERY_BOYS, SALE_TYPES, EXPENSE_CATEGORIES, CHIT_HOLDERS, OTHER_PRODUCTS, OTHER_PRODUCT_PRICES, ACCOUNTANTS, MINI_BANK_DESCRIPTIONS } from '@/lib/constants';
 import { TransactionType, CylinderType, Transaction, CylinderCosts, SaleTransaction, PurchaseTransaction, ExpenseTransaction } from '@/lib/types';
 import { useAccountantStore } from '@/stores/accountant-store';
 
@@ -150,19 +150,27 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
   const saleType = watchedType === 'Sale' ? form.watch('saleType') : undefined;
   const cylinderType = (watchedType === 'Sale' || watchedType === 'Purchase') ? form.watch('cylinderType') : undefined;
   const quantity = (watchedType === 'Sale' || watchedType === 'Purchase') ? form.watch('quantity') : undefined;
+  const otherProduct = watchedType === 'Sale' && saleType === 'Other Sale' ? form.watch('otherProduct') : undefined;
   const expenseCategory = watchedType === 'Expense' ? form.watch('category') : undefined;
 
 
   const isAmountReadOnly = watchedType === 'Sale' && saleType !== 'Other Sale' && !isEditMode;
 
   useEffect(() => {
-    if (!isEditMode && type === 'Sale' && saleType !== 'Other Sale' && cylinderType && quantity && quantity > 0 && cylinderCosts) {
-      const cost = cylinderCosts[cylinderType as CylinderType];
-      if (cost !== undefined) {
-        form.setValue('amount', cost * quantity);
+    if (!isEditMode && type === 'Sale' && quantity && quantity > 0) {
+      if (saleType !== 'Other Sale' && cylinderType && cylinderCosts) {
+        const cost = cylinderCosts[cylinderType as CylinderType];
+        if (cost !== undefined) {
+          form.setValue('amount', cost * quantity);
+        }
+      } else if (saleType === 'Other Sale' && otherProduct) {
+        const cost = OTHER_PRODUCT_PRICES[otherProduct as keyof typeof OTHER_PRODUCT_PRICES];
+        if (cost !== undefined && cost !== 0) {
+          form.setValue('amount', cost * quantity);
+        }
       }
     }
-  }, [cylinderType, quantity, type, form, isEditMode, saleType, cylinderCosts]);
+  }, [cylinderType, quantity, type, form, isEditMode, saleType, cylinderCosts, otherProduct]);
   
   useEffect(() => {
     if (isEditMode && transaction) {
