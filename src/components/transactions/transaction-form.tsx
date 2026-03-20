@@ -162,7 +162,7 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
   const expenseCategory = watchedType === 'Expense' ? form.watch('category') : undefined;
 
 
-  const isAmountReadOnly = watchedType === 'Sale' && saleType !== 'Other Sale' && !isEditMode;
+  const isAmountReadOnly = watchedType === 'Sale' && saleType !== 'Other Sale';
 
   useEffect(() => {
     if (!isEditMode && type === 'Sale' && quantity && quantity > 0) {
@@ -171,8 +171,7 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
         if (cost !== undefined) {
           form.setValue('amount', cost * quantity);
         }
-      } 
-      // User requested to enter manually the prices for "Other Sale"
+      }
     }
   }, [cylinderType, quantity, type, form, isEditMode, saleType, cylinderCosts]);
   
