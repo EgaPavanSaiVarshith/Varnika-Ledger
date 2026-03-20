@@ -92,14 +92,14 @@ export async function deleteTransaction(id: string, type: string) {
     revalidatePath('/', 'layout');
 }
 
-export async function getCylinderCosts(): Promise<CylinderCosts> {
-  const costs = await getCylinderCostsFromFirestore();
+export async function getCylinderCosts(monthStr?: string): Promise<CylinderCosts> {
+  const costs = await getCylinderCostsFromFirestore(monthStr);
   return costs as CylinderCosts;
 }
 
-export async function updateCylinderCosts(newCosts: CylinderCosts): Promise<void> {
-  console.log('Updating cylinder costs in Firestore:', newCosts);
-  await updateCylinderCostsInFirestore(newCosts);
+export async function updateCylinderCosts(monthStr: string, newCosts: CylinderCosts): Promise<void> {
+  console.log(`Updating cylinder costs for ${monthStr} in Firestore:`, newCosts);
+  await updateCylinderCostsInFirestore(monthStr, newCosts);
   revalidatePath('/dashboard/settings');
   revalidatePath('/dashboard/transactions'); // Revalidate pages that use the costs
 }

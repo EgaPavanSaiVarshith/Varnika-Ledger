@@ -15,10 +15,12 @@ import { useToast } from '@/hooks/use-toast';
 import { getCylinderCosts, updateCylinderCosts } from '@/lib/actions';
 import { CYLINDER_TYPES } from '@/lib/constants';
 import { formatCurrency } from '@/lib/utils';
+import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import type { CylinderCosts } from '@/lib/types';
 
 export default function SettingsPage() {
+  const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), 'yyyy-MM'));
   const [costs, setCosts] = useState<CylinderCosts | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -26,8 +28,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function fetchCosts() {
+      setLoading(true);
       try {
-        const currentCosts = await getCylinderCosts();
+        const currentCosts = await getCylinderCosts(selectedMonth);
         setCosts(currentCosts);
       } catch (error) {
         toast({
@@ -40,7 +43,7 @@ export default function SettingsPage() {
       }
     }
     fetchCosts();
-  }, [toast]);
+  }, [selectedMonth, toast]);
 
   const handleCostChange = (cylinderType: string, value: string) => {
     if (!costs) return;
@@ -58,7 +61,7 @@ export default function SettingsPage() {
 
     setSaving(true);
     try {
-      await updateCylinderCosts(costs);
+      await updateCylinderCosts(selectedMonth, costs);
       toast({
         title: 'Success!',
         description: 'Cylinder costs have been updated.',
@@ -89,10 +92,23 @@ export default function SettingsPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Cylinder Prices</CardTitle>
-          <CardDescription>
-            Update the cost for each cylinder type. This will be used to pre-fill the amount in sale transactions.
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle>Cylinder Prices</CardTitle>
+              <CardDescription>
+                Update the cost for each cylinder type for a specific month.
+              </CardDescription>
+            </div>
+            <div className="w-full sm:w-auto">
+              <Label htmlFor="month-picker" className="sr-only">Select Month</Label>
+              <Input
+                id="month-picker"
+                type="month"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {costs ? (

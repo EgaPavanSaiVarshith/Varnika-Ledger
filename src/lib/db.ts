@@ -86,20 +86,34 @@ export async function deleteTransactionFromFirestore(id: string, type: string): 
 /**
  * Gets the cylinder costs from Firestore
  */
-export async function getCylinderCostsFromFirestore() {
+export async function getCylinderCostsFromFirestore(monthStr?: string) {
   try {
     const docRef = doc(db, 'settings', 'cylinderCosts');
     const docSnap = await getDoc(docRef);
+    let allData: any = {};
     if (docSnap.exists()) {
-      return docSnap.data();
+      allData = docSnap.data();
     }
-    // Default values if not strictly specified in DB yet
-    return {
+    
+    const defaultCosts = {
       '14.2kg': 960,
       '19kg (Commercial)': 2500,
       '10kg': 850,
       '5kg': 450,
     };
+
+    if (monthStr) {
+      if (allData[monthStr]) return allData[monthStr];
+      if (allData['14.2kg'] !== undefined) return {
+        '14.2kg': allData['14.2kg'],
+        '19kg (Commercial)': allData['19kg (Commercial)'],
+        '10kg': allData['10kg'],
+        '5kg': allData['5kg'],
+      };
+      return defaultCosts;
+    }
+    
+    return allData;
   } catch (error) {
     console.error('Error fetching cylinder costs:', error);
     throw new Error('Could not fetch settings from database.');
@@ -109,10 +123,10 @@ export async function getCylinderCostsFromFirestore() {
 /**
  * Updates the cylinder costs in Firestore
  */
-export async function updateCylinderCostsInFirestore(costs: any): Promise<void> {
+export async function updateCylinderCostsInFirestore(monthStr: string, costs: any): Promise<void> {
   try {
     const docRef = doc(db, 'settings', 'cylinderCosts');
-    await setDoc(docRef, costs, { merge: true });
+    await setDoc(docRef, { [monthStr]: costs }, { merge: true });
   } catch (error) {
     console.error('Error updating cylinder costs:', error);
     throw new Error('Could not update settings in database.');

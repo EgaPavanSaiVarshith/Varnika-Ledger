@@ -84,13 +84,6 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
   const [cylinderCosts, setCylinderCosts] = useState<CylinderCosts | null>(null);
   const { accountant } = useAccountantStore();
 
-  useEffect(() => {
-    async function fetchCosts() {
-      const costs = await getCylinderCosts();
-      setCylinderCosts(costs);
-    }
-    fetchCosts();
-  }, []);
 
   const getDefaultValues = (): FormValues => {
     if (isEditMode && transaction) {
@@ -147,6 +140,19 @@ export function TransactionForm({ type, onSuccess, transaction }: TransactionFor
     resolver: zodResolver(formSchema),
     defaultValues: getDefaultValues(),
   });
+
+  const watchedDate = form.watch('date');
+
+  useEffect(() => {
+    async function fetchCosts() {
+      if (watchedDate) {
+        const monthStr = format(watchedDate, 'yyyy-MM');
+        const costs = await getCylinderCosts(monthStr);
+        setCylinderCosts(costs);
+      }
+    }
+    fetchCosts();
+  }, [watchedDate]);
   
   const watchedType = form.watch('type');
   const saleType = watchedType === 'Sale' ? form.watch('saleType') : undefined;
